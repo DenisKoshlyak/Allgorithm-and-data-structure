@@ -1,0 +1,145 @@
+class DistPar {
+    public int distance;
+    public int parentVert;
+
+    public DistPar(int pv, int d) {
+        distance = d;
+        parentVert = pv;
+    }
+}
+
+class Vertex
+{
+    public char label;
+    public boolean isInTree;
+    public Vertex(char lab) {
+        label = lab;
+        isInTree = false;
+    }
+}
+
+class Graph {
+    private final int MAX_VERTS = 14;
+    private final int INFINITY = 1000000;
+    private Vertex vertexList[];
+    private int adjMat[][];
+    private int nVerts;
+    private int[] arrayCombinations;
+    private int minimumPath;
+    private int[] minArrComb;
+
+    public Graph() {
+        vertexList = new Vertex[MAX_VERTS];
+        adjMat = new int[MAX_VERTS][MAX_VERTS];
+        nVerts = 0;
+        arrayCombinations = new int[MAX_VERTS];
+        arrayCombinations[0] = 0;
+        minArrComb = new int[MAX_VERTS];
+        minimumPath = INFINITY;
+        for(int i = 0; i < MAX_VERTS; i++){
+            for(int j = 0 ; j < MAX_VERTS; j++)
+                adjMat[i][j] = INFINITY;
+        }
+    }
+
+    public void addVertex(char lab) {
+        vertexList[nVerts++] = new Vertex(lab);
+        arrayCombinations[nVerts] = nVerts;
+    }
+
+    public void addEdge(int start, int end, int weight) {
+        adjMat[start][end] = weight;
+        adjMat[end][start] = weight;
+    }
+
+    public void findSmallestPath(){
+        arrayCombinations[nVerts] = 0;
+        findPathCombination(nVerts - 1);
+    }
+
+    private void findPathCombination(int newSize) {
+        if (newSize == 1)
+            return;
+        for(int i = 0; i < newSize; i++) {
+            findPathCombination(newSize - 1);
+            rotate(newSize);
+            if(newSize == 2) {
+                calculationLenghPath();
+            }
+        }
+    }
+
+    private void rotate(int newSize) {
+        int j;
+        int position = nVerts - newSize;
+        int temp = arrayCombinations[position];
+        for(j=position+1; j<nVerts; j++)
+            arrayCombinations[j-1] = arrayCombinations[j];
+        arrayCombinations[j-1] = temp;
+    }
+
+    private void calculationLenghPath() {
+        int lenghtPath = 0;
+        for (int i = 0; i < nVerts; i++) {
+            lenghtPath += adjMat[arrayCombinations[i]][arrayCombinations[i + 1]];
+        }
+        if (lenghtPath < minimumPath) {
+            minimumPath = lenghtPath;
+            for(int i = 0; i < nVerts + 1; i++)
+                minArrComb[i] = arrayCombinations[i];
+        }
+    }
+
+    public void displayShortestRoute(){
+        System.out.println("The shortest route: " + minimumPath);
+        System.out.print(vertexList[minArrComb[0]].label);
+        for(int i = 1; i < nVerts + 1; i++){
+            System.out.print("->");
+            System.out.print(vertexList[minArrComb[i]].label);
+        }
+    }
+}
+
+class SalesmanTask {
+    public static void main(String[] args) {
+        Graph theGraph = new Graph();
+        theGraph.addVertex('A');
+        theGraph.addVertex('B');
+        theGraph.addVertex('C');
+        theGraph.addVertex('D');
+        theGraph.addVertex('E');
+        theGraph.addVertex('F');
+        theGraph.addVertex('G');
+        theGraph.addVertex('H');
+        theGraph.addVertex('I');
+        theGraph.addVertex('K');
+        theGraph.addVertex('L');
+        theGraph.addEdge(0, 1, 100);
+        theGraph.addEdge(1, 2, 10);
+        theGraph.addEdge(2, 3, 10);
+        theGraph.addEdge(3, 4, 100);
+        theGraph.addEdge(4, 3, 100);
+        theGraph.addEdge(1, 4, 10);
+        theGraph.addEdge(2, 4, 50);
+        theGraph.addEdge(0, 4, 10);
+        theGraph.addEdge(3, 0, 10);
+        theGraph.addEdge(1, 5, 10);
+        theGraph.addEdge(2, 5, 10);
+        theGraph.addEdge(0, 6, 10);
+        theGraph.addEdge(1, 6, 10);
+        theGraph.addEdge(5, 6, 10);
+        theGraph.addEdge(6, 7, 10);
+        theGraph.addEdge(5, 7, 10);
+        theGraph.addEdge(6, 10, 10);
+        theGraph.addEdge(6, 9, 10);
+        theGraph.addEdge(10, 9, 10);
+        theGraph.addEdge(7, 9, 10);
+        theGraph.addEdge(5, 9, 10);
+        theGraph.addEdge(8, 9, 10);
+        theGraph.addEdge(5, 8, 10);
+        theGraph.addEdge(2, 8, 10);
+        theGraph.addEdge(8, 3, 10);
+        theGraph.findSmallestPath();
+        theGraph.displayShortestRoute();
+    }
+}

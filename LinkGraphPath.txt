@@ -1,0 +1,174 @@
+class DistPar {
+    public int distance;
+    public int parentVert;
+
+    public DistPar(int pv, int d) {
+        distance = d;
+        parentVert = pv;
+    }
+}
+
+class Edge{
+    private Vertex nextVertex;
+    private int weight;
+
+    public Edge(Vertex next, int weight) {
+        nextVertex = next;
+        this.weight = weight;
+    }
+
+    public Vertex getNumEnd() {
+        return nextVertex;
+    }
+
+    public int getWeight() {
+        return weight;
+    }
+}
+
+class Vertex {
+    public char label;
+    private final int INFINITY = 1000000;
+    private final int MAX_VERTS = 20;
+    public boolean isInTree;
+    private Edge[] arrayEdge;
+    private final int num;
+    public Vertex(char lab, int num) {
+        label = lab;
+        isInTree = false;
+        arrayEdge = new Edge[MAX_VERTS];
+        this.num = num;
+    }
+
+    public void addEdge(Vertex next, int weight){
+        arrayEdge[next.getNum()] = new Edge(next, weight);
+    }
+
+    public int getDistance(int num){
+        if(arrayEdge[num] != null)
+            return arrayEdge[num].getWeight();
+        else
+            return INFINITY;
+    }
+
+    public int getNum() {
+        return num;
+    }
+}
+
+
+class Graph {
+    private final int MAX_VERTS = 20;
+    private final int INFINITY = 1000000;
+    private GraphsOnly.Vertex vertexList[];
+    private int nVerts;
+    private int nTree;
+    private GraphsOnly.DistPar sPath[];
+    private int currentVert;
+    private int startToCurrent;
+    private int numberVert = 0;
+    public Graph() {
+        vertexList = new GraphsOnly.Vertex[MAX_VERTS];
+        nVerts = 0;
+        nTree = 0;
+        sPath = new GraphsOnly.DistPar[MAX_VERTS];
+    }
+
+    public void addVertex(char lab) {
+        vertexList[nVerts++] = new GraphsOnly.Vertex(lab, nVerts - 1);
+    }
+
+    public void addEdge(int start, int end, int weight) {
+        vertexList[start].addEdge(vertexList[end], weight);
+    }
+
+    public void path() {
+        int startTree = 0;
+        vertexList[startTree].isInTree = true;
+        nTree = 1;
+        for (int j = 0; j < nVerts; j++) {
+            int tempDist = vertexList[startTree].getDistance(j);
+            sPath[j] = new GraphsOnly.DistPar(startTree, tempDist);
+        }
+        while (nTree < nVerts) {
+            int indexMin = getMin();
+            int minDist = sPath[indexMin].distance;
+            if (minDist == INFINITY) {
+                System.out.println("There are unreachable vertices");
+                break;
+            } else {
+                currentVert = indexMin;
+                startToCurrent = sPath[indexMin].distance;
+            }
+            vertexList[currentVert].isInTree = true;
+            nTree++;
+            adjust_sPath();
+        }
+        nTree = 0;
+        for (int j = 0; j < nVerts; j++) {
+            vertexList[j].isInTree = false;
+        }
+        displayPaths();
+    }
+
+    public int getMin() {
+        int minDist = INFINITY;
+        int indexMin = 0;
+        for(int j=1; j<nVerts; j++) {
+            if( !vertexList[j].isInTree && sPath[j].distance < minDist ) {
+                minDist = sPath[j].distance;
+                indexMin = j;
+            }
+        }
+        return indexMin;
+    }
+
+    public void adjust_sPath() {
+        int column = 1;
+        while(column < nVerts) {
+            if(vertexList[column].isInTree) {
+                column++;
+                continue;
+            }
+            int currentToFringe = vertexList[currentVert].getDistance(column);
+            int startToFringe = startToCurrent + currentToFringe;
+            int sPathDist = sPath[column].distance;
+            if(startToFringe < sPathDist) {
+                sPath[column].parentVert = currentVert;
+                sPath[column].distance = startToFringe;
+            }
+            column++;
+        }
+    }
+
+    public void displayPaths() {
+        for(int j=0; j<nVerts; j++) {
+            System.out.print(vertexList[j].label + "=");
+            if(sPath[j].distance == INFINITY)
+                System.out.print("inf");
+            else
+                System.out.print(sPath[j].distance);
+            char parent = vertexList[sPath[j].parentVert].label;
+            System.out.print("(" + parent + ") ");
+        }
+        System.out.println("");
+    }
+}
+
+class LinkGraphPath {
+    public static void main(String[] args) {
+        Graph theGraph = new Graph();
+        theGraph.addVertex('A');
+        theGraph.addVertex('B');
+        theGraph.addVertex('C');
+        theGraph.addVertex('D');
+        theGraph.addVertex('E');
+        theGraph.addEdge(0, 1, 50);
+        theGraph.addEdge(1, 2, 60);
+        theGraph.addEdge(2, 3, 20);
+        theGraph.addEdge(3, 4, 40);
+        System.out.println("Shortest paths");
+        theGraph.path();
+        System.out.println();
+    }
+}
